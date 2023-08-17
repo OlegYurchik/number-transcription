@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "number-transcription"
+version = "1.0.0"
+description = "Multilanguage library for conversion numbers to words description"
+authors = ["Oleg Yurchik <oleg@yurchik.space>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "number_transcription"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
