@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "number-transcription"
-version = "1.0.0"
+version = "1.1.0"
 description = "Multilanguage library for conversion numbers to words description"
 authors = ["Oleg Yurchik <oleg@yurchik.space>"]
 license = "MIT"

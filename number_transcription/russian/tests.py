@@ -1,7 +1,7 @@
 import pytest
 
 from number_transcription.enums import GenderEnum, ScaleTypeEnum
-from .conversion import number_to_words
+from .conversion import number_to_words, words_to_number
 from .enums import RussianUnit
 
 
@@ -78,10 +78,10 @@ from .enums import RussianUnit
     ),
     # Skip
     # (
-    #     1_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000,
+    #     10 ** 69,
     #     None,
     #     ScaleTypeEnum.LONG,
-    #     "одна тысяча дециллиардов",
+    #     "одна тысяча ундециллионов",
     # ),
 ))
 def test_number_to_words(number: int, unit: RussianUnit | None,
@@ -94,5 +94,44 @@ def test_number_to_words(number: int, unit: RussianUnit | None,
     parameters = {key: value for key, value in parameters.items() if value is not None}
     
     result = number_to_words(**parameters)
+
+    assert result == expected
+
+
+@pytest.mark.parametrize(("text", "scale_type", "expected"), (
+    (
+        "девятнадцать тысяч пятьсот три",
+        None,
+        19503,
+    ),
+    (
+        "восемьсот пятьдесят две тысячи двадцать одна ложка",
+        None,
+        852021,
+    ),
+    (
+        "Шестьдесят-Пять тЫсЯча и ТриСта тридцать, четыре",
+        None,
+        65334,
+    ),
+    (
+        "пятьдесят восемь новемдециллионов четыреста сорок девять",
+        None,
+        58 * (10 ** 60) + 449,
+    ),
+    (
+        "семьдесят семь новемдециллионов сто тринадцать",
+        ScaleTypeEnum.LONG,
+        77 * (10 ** 114) + 113,
+    ),
+))
+def test_words_to_number(text: str, scale_type: ScaleTypeEnum | None, expected: str):
+    parameters = {
+        "text": text,
+        "scale_type": scale_type,
+    }
+    parameters = {key: value for key, value in parameters.items() if value is not None}
+
+    result = words_to_number(**parameters)
 
     assert result == expected

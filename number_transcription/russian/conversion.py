@@ -1,12 +1,20 @@
+import re
+
 from number_transcription.enums import GenderEnum, ScaleTypeEnum
 from .enums import RussianUnit
 from .storage import (
     DOZENS,
+    DOZENS_REVERSE,
     HUNDREDS,
+    HUNDREDS_REVERSE,
     LONG_THOUSAND_POWERS,
+    LONG_THOUSAND_POWERS_REVERSE,
     ONE_DOZEN,
+    ONE_DOZEN_REVERSE,
     SHORT_THOUSAND_POWERS,
+    SHORT_THOUSAND_POWERS_REVERSE,
     UNITS,
+    UNITS_REVERSE,
 )
 
 
@@ -24,7 +32,7 @@ def _choose_unit(number: int, unit: RussianUnit) -> str:
 
 def number_to_words(number: int, unit: RussianUnit | None = None,
                     scale_type: ScaleTypeEnum = ScaleTypeEnum.SHORT) -> str:
-    thousand_power = -1
+    power = 0
     result = []
     if scale_type is ScaleTypeEnum.SHORT:
         thousand_powers = SHORT_THOUSAND_POWERS
@@ -61,14 +69,41 @@ def number_to_words(number: int, unit: RussianUnit | None = None,
         result = current_result + result
 
         # Increment iteration
-        thousand_power += 1
-        if thousand_power < len(thousand_powers):
-            current_unit = thousand_powers[thousand_power]
-        else:
-            current_unit = None
+        power += 3
+        current_unit = thousand_powers.get(power)
         number //= 1000
         
         if number == 0:
             break
 
     return " ".join(result)
+
+
+SEPARATOR_REGEXP = re.compile(r"[\W\d_]+")
+
+
+def words_to_number(text: str, scale_type: ScaleTypeEnum = ScaleTypeEnum.SHORT) -> int:
+    words = SEPARATOR_REGEXP.split(text)
+    words = map(str.strip, words)
+    words = filter(lambda element: bool(element), words)
+    words = tuple(map(str.lower, words))
+    number = 0
+
+    if scale_type is ScaleTypeEnum.SHORT:
+        thousand_powers_reverse = SHORT_THOUSAND_POWERS_REVERSE
+    else:
+        thousand_powers_reverse = LONG_THOUSAND_POWERS_REVERSE
+
+    for word in words:
+        if (thousand_power := thousand_powers_reverse.get(word)):
+            number *= 10 ** thousand_power
+        elif (hundreds := HUNDREDS_REVERSE.get(word)):
+            number += hundreds * 100
+        elif (dozens := DOZENS_REVERSE.get(word)):
+            number += dozens * 10
+        elif (one_dozen := ONE_DOZEN_REVERSE.get(word)):
+            number += one_dozen
+        elif (unit := UNITS_REVERSE.get(word)):
+            number += unit
+
+    return number
